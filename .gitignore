@@ -1,3 +1,4 @@
 dist
 build
 setcap.spec
+__pycache__
