@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import os
+import commands
 import sys
 import argparse
 import configparser
@@ -9,6 +10,8 @@ if __name__ == "__main__":
     if os.geteuid() != 0:
         print("ERROR: This script must be run with sudo/root privileges!")
         sys.exit()
+    
+    commands.test()
     
     #Existence check for configuration file--if not exists, create empty one in /etc directory
     if not os.path.isfile("/etc/setcap.ini"):

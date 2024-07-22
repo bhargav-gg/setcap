@@ -7,5 +7,5 @@ test: setcap.py
 	sudo ./setcap.py
 
 run: setcap.py
-	./dist/setcap
+	sudo ./setcap.py
 
