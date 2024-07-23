@@ -1,4 +1,5 @@
 import configparser
+import os
 
 def addmod(uid: str, cpu: float, ram: int, storage: int):
     config = configparser.ConfigParser()
@@ -42,7 +43,7 @@ def view():
     print("Viewing...")
 
 def edit():
-    print("Editing...")
+    os.system("sudo nano /etc/setcap.ini")
 
 def install():
     print("Installing...")
