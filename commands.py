@@ -2,8 +2,9 @@ import configparser
 
 def addmod(uid: str, cpu: float, ram: int, storage: int):
     config = configparser.ConfigParser()
-
-    config.read('/etc/setcap.ini')
+    
+    with open('/etc/setcap.ini', "r") as config_file:
+        config.read_file(config_file)
     
     if ram and ram >= 0:
         config.set('RAMLimits', uid, str(ram))
@@ -13,16 +14,29 @@ def addmod(uid: str, cpu: float, ram: int, storage: int):
     
     if storage and storage >= 0:
         config.set('DiskLimits', uid, str(storage))
-    
-    print("Here?")
 
-    with open('/etc/setcap.ini') as config_file:
+    with open('/etc/setcap.ini', "w") as config_file:
         config.write(config_file)
 
 
 
-def delete(uid: int):
-    print("Deleting...")
+def delete(uid: str):
+    config = configparser.ConfigParser()
+
+    with open('/etc/setcap.ini', "r") as config_file:
+        config.read_file(config_file)
+    
+    if config.has_option('RAMLimits', uid):
+        config.remove_option('RAMLimits', uid)
+    
+    if config.has_option('CPULimits', uid):
+        config.remove_option('CPULimits', uid)
+    
+    if config.has_option('DiskLimits', uid):
+        config.remove_option('Disklimits', uid)
+    
+    with open('/etc/setcap.ini', "w") as config_file:
+        config.write(config_file)
 
 def view():
     print("Viewing...")

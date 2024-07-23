@@ -49,5 +49,4 @@ def create_empty_config(path: str):
     config['CPULimits'] = {}
 
     with open("/etc/setcap.ini", "w") as config_file:
-        print(config)
         config.write(config_file)

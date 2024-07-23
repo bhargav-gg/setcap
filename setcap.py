@@ -57,7 +57,7 @@ if __name__ == "__main__":
             except:
                 print("ERROR: Cannot cast CPU limit into integer!")
                 sys.exit()
-        
+
         if args['storage']:
             args['storage'] = caputils.stringbytes_to_integer(args['storage'], "storage")
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
                 sys.exit()
 
         
-        commands.addmod(uid=str(uid), cpu=args['cpu'], ram=args['memory'], storage=['storage'])
+        commands.addmod(uid=str(uid), cpu=args['cpu'], ram=args['memory'], storage=args['storage'])
     #NEEDS USER
     elif args['mode'] == 'delete':
         if not args['user']:
@@ -78,7 +78,7 @@ if __name__ == "__main__":
             print("ERROR: Username was provided, but was not able to be resolved into a UID!")
             sys.exit()
         
-        commands.delete(uid)
+        commands.delete(str(uid))
     elif args['mode'] == 'view':
         commands.view()
     elif args['mode'] == 'edit':
