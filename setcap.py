@@ -40,6 +40,10 @@ if __name__ == "__main__":
             print("ERROR: Username was provided, but was not able to be resolved into a UID!")
             sys.exit()
         
+        if uid == 0:
+            print("ERROR: Cannot set limits on root user!")
+            sys.exit()
+        
         if not args['memory'] and not args['cpu'] and not args['storage']:
             print("ERROR: addmod needs at least one limit, i.e. memory (-m, --memory), CPU (-c, --cpu), storage (-s, --storage)")
             sys.exit()
@@ -51,7 +55,7 @@ if __name__ == "__main__":
                 sys.exit()
 
         if args['cpu']:
-            args['cpu'] = re.sub("\%", "", args['cpu'])
+            args['cpu'] = re.sub("\\%", "", args['cpu'])
 
             try:
                 args['cpu'] = int(args['cpu'])
