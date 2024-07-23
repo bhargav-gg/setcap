@@ -47,6 +47,7 @@ def create_empty_config(path: str):
     config['RAMLimits'] = {}
     config['DiskLimits'] = {}
     config['CPULimits'] = {}
+    config['Editor'] = {'app': 'nano'}
 
     with open("/etc/setcap.ini", "w") as config_file:
         config.write(config_file)

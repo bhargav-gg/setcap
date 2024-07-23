@@ -42,8 +42,19 @@ def delete(uid: str):
 def view():
     print("Viewing...")
 
-def edit():
-    os.system("sudo nano /etc/setcap.ini")
+def editor(app: str):
+    config = configparser.ConfigParser()
+
+    with open('/etc/setcap.ini', "r") as config_file:
+        config.read_file(config_file)
+    
+    if app:
+        config.set("Editor", 'app', app)
+
+        with open('/etc/setcap.ini', "w") as config_file:
+            config.write(config_file)
+    
+    os.system(f"sudo {config['Editor']['app']} /etc/setcap.ini")
 
 def install():
     print("Installing...")

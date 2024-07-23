@@ -19,11 +19,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(prog="setcap", description="Sets resource limits by user (UID) for CPU/RAM/SSD", epilog="setcap is a Clemson University CPSC student project, the source code can be found at: https://github.com/bhargav-gg/setcap")
 
-    parser.add_argument('mode', action='store', type=str, choices=['addmod', 'delete', 'view', 'edit', 'install'], help='Mode of operation')
-    parser.add_argument('-u', '--user', action='store', type=str, help='User whose limits are being added/modified/removed')
-    parser.add_argument('-m', '--memory', action='store', type=str, help='Memory limits, supports KB/MB/GB/raw integer', required=False)
-    parser.add_argument('-c', '--cpu', action='store', type=str, help='CPU limits, supports percentage', required=False)
-    parser.add_argument('-s', '--storage', action='store', type=str, help='Storage limits, supports KB/MB/GB/raw integer', required=False)
+    parser.add_argument('mode', action='store', type=str, choices=['addmod', 'delete', 'view', 'editor', 'install'], help='Mode of operation')
+    parser.add_argument('-u', '--user', action='store', type=str, help='User whose limits are being added/modified/removed (addmod/delete)')
+    parser.add_argument('-m', '--memory', action='store', type=str, help='Memory limits, supports KB/MB/GB/raw integer (addmod)', required=False)
+    parser.add_argument('-c', '--cpu', action='store', type=str, help='CPU limits, supports percentage (addmod)', required=False)
+    parser.add_argument('-s', '--storage', action='store', type=str, help='Storage limits, supports KB/MB/GB/raw integer (addmod)', required=False)
+    parser.add_argument('-a', '--application', action='store', type=str, help="New editor application to use to quick open configuration file (editor)")
 
     args = vars(parser.parse_args())
 
@@ -81,8 +82,8 @@ if __name__ == "__main__":
         commands.delete(str(uid))
     elif args['mode'] == 'view':
         commands.view()
-    elif args['mode'] == 'edit':
-        commands.edit()
+    elif args['mode'] == 'editor':
+        commands.editor(args['application'])
     elif args['mode'] == 'install':
         commands.install()
 
