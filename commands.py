@@ -39,7 +39,23 @@ def delete(uid: str):
         config.remove_option('CPULimits', uid)
     
     if config.has_option('DiskLimits', uid):
-        config.remove_option('Disklimits', uid)
+        config.remove_option('DiskLimits', uid)
+    
+    subprocess.run(["sudo", "setquota", "-u", uid, "0", "0", "0", "0", "/"])
+
+    if os.path.isdir(f'/sys/fs/cgroup/{uid}'):
+        subprocess.run(["sudo", "rmdir", f"/sys/fs/cgroup/{uid}"])
+    
+    if os.path.isfile(f'/etc/cgrules.conf'):
+        contents = ""
+
+        with open('/etc/cgrules.conf', "r") as file:
+            contents = file.read()
+        
+        contents = re.sub(f"{caputils.name_from_uid(int(uid))}\\s*cpu,ram\\s*/sys/fs/cgroup/{uid}", "", contents)
+
+        with open('/etc/cgrules.conf', "w") as file:
+            file.write(contents)
     
     with open('/etc/setcap.ini', "w") as config_file:
         config.write(config_file)
@@ -75,10 +91,6 @@ def view():
             
             if owner not in cpu_dict:
                 cpu_dict[owner] = []
-
-            
-            #ram = subprocess.run(f"""cat /proc/{filename}/smaps | grep -i pss | awk '{{Total+=$2}} END {{print Total/1000/1000"GB"}}""")
-            #ram = subprocess.run(["cat", f"/proc/{filename}/smaps", "|", "grep", "-i", "pss", "|", "awk", "'{Total+=$2}", "END", """{print Total/1000/1000}"GB"}'"""])
 
             ram = os.popen(f"""cat /proc/{filename}/smaps | grep -i pss |  awk '{{Total+=$2}} END {{print Total/1024/1024"GB"}}'""").read()
             ram = caputils.stringbytes_to_integer(ram, resource="RAM")
@@ -118,7 +130,7 @@ def view():
 
             if config.has_option('RAMLimits', str(p.pw_uid)):
                 ram_limit = config.get('RAMLimits', str(p.pw_uid))
-                ram_limit = int(ram_limit)
+                ram_limit = int(float(ram_limit))
                 ram_limit = caputils.integer_to_stringbytes(ram_limit)
             
             if config.has_option('CPULimits', str(p.pw_uid)):
@@ -126,7 +138,7 @@ def view():
             
             if config.has_option('DiskLimits', str(p.pw_uid)):
                 disk_limit = config.get('DiskLimits', str(p.pw_uid))
-                disk_limit = int(disk_limit)
+                disk_limit = int(float(disk_limit))
                 disk_limit = caputils.integer_to_stringbytes(disk_limit)
             
             print(f"{p.pw_uid:<17}{p.pw_name:<17}{str(cpu_usage) + "%":<17}{caputils.integer_to_stringbytes(ram_usage):<17}{disk_usage if disk_usage else "N/A":<17}{cpu_limit + "%" if cpu_limit else "N/A":<17}{ram_limit if ram_limit else "N/A":<17}{disk_limit if disk_limit else "N/A":<17}")
@@ -147,4 +159,46 @@ def editor(app: str):
     os.system(f"sudo {config['Editor']['app']} /etc/setcap.ini")
 
 def install():
-    print("Installing...")
+    config = configparser.ConfigParser()
+
+    with open('/etc/setcap.ini', "r") as config_file:
+        config.read_file(config_file)
+    
+    storage_limits = dict(config.items('DiskLimits'))
+
+    for uid in storage_limits:
+        subprocess.run(["sudo", "setquota", "-u", uid, str(int(float(storage_limits[uid]))), str(int(float(storage_limits[uid]))), "0", "0", "/"])
+    
+    cpu_limits = dict(config.items("CPULimits"))
+
+    for uid in cpu_limits:
+        converted_limit = int(cpu_limits[uid]) * 10000
+
+        if not os.path.isdir(f'/sys/fs/cgroup/{uid}'):
+            os.system(f"sudo mkdir /sys/fs/cgroup/{uid}")
+        
+        os.system(f"""sudo echo "{converted_limit} 1000000" | sudo tee /sys/fs/cgroup/{uid}/cpu.max""")
+
+    
+    ram_limits = dict(config.items("RAMLimits"))
+
+    for uid in ram_limits:
+        if not os.path.isdir(f'/sys/fs/cgroup/{uid}'):
+            os.system(f"sudo mkdir /sys/fs/cgroup/{uid}")
+        
+        os.system(f"""sudo echo "{int(float(ram_limits[uid]))}" | sudo tee /sys/fs/cgroup/{uid}/memory.max""")
+    
+    cgconfig_file = open("/etc/cgrules.conf", "w")
+    
+    cg_uids = list(ram_limits.keys()) + list(cpu_limits.keys())
+    cg_uids = list(set(cg_uids))
+    contents = ""
+    
+    for uid in cg_uids:
+        contents += f"{caputils.name_from_uid(int(uid))} cpu,ram /sys/fs/cgroup/{uid}\n"
+
+    cgconfig_file.write(contents)
+
+    cgconfig_file.close()
+
+    os.system(f"sudo cgrulesengd")

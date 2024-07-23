@@ -28,7 +28,8 @@ def name_from_uid(uid: int):
     try:
         name = pwd.getpwuid(uid).pw_name
         return name
-    except:
+    except Exception as e:
+        print(str(e))
         return None
 
 def stringbytes_to_integer(stringbytes: str, resource: str):
@@ -36,11 +37,11 @@ def stringbytes_to_integer(stringbytes: str, resource: str):
     stringbytes = str.lower(stringbytes)
 
     if re.match(".*kb", stringbytes):
-        mult = 1_000
+        mult = 1_024
     elif re.match(".*mb", stringbytes):
-        mult = 1_000_000
+        mult = 1_024 * 1024
     elif re.match(".*gb", stringbytes):
-        mult = 1_000_000_000
+        mult = 1_024 * 1_024 * 1_024
     
     stringbytes = re.sub("kb", "", stringbytes)
     stringbytes = re.sub("mb", "", stringbytes)
@@ -55,12 +56,12 @@ def stringbytes_to_integer(stringbytes: str, resource: str):
         return None
 
 def integer_to_stringbytes(number: float):
-    if number >= 1_000_000_000:
-        return f"{number / 1_000_000_000:.2f}GB"
-    elif number >= 1_000_000:
-        return f"{number / 1_000_000:.2f}MB"
-    elif number >= 1_000:
-        return f"{number / 1_000:.2f}KB"
+    if number >= (1_024 * 1_024 * 1_024):
+        return f"{number / (1_024 * 1_024 * 1_024):.2f}GB"
+    elif number >= (1_024 * 1_024):
+        return f"{number / (1_024 * 1_024):.2f}MB"
+    elif number >= 1_024:
+        return f"{number / 1_024:.2f}KB"
     
     return number
 
