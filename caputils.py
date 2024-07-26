@@ -1,3 +1,7 @@
+##############################################
+# Utilities module used for convenience in the driver/commands module
+##############################################
+
 import os
 import sys
 import pwd
@@ -5,6 +9,7 @@ import re
 import grp
 import configparser
 
+#Gets size of a given directory
 def get_size(start = '.'):
     size = 0
 
@@ -17,6 +22,7 @@ def get_size(start = '.'):
     
     return size
 
+#Converts name -> UID
 def uid_from_name(name: str):
     try:
         uid = pwd.getpwnam(name).pw_uid
@@ -24,6 +30,7 @@ def uid_from_name(name: str):
     except:
         return None
 
+#Converts UID -> name
 def name_from_uid(uid: int):
     try:
         name = pwd.getpwuid(uid).pw_name
@@ -32,6 +39,7 @@ def name_from_uid(uid: int):
         print(str(e))
         return None
 
+#Translates KB/MB/GB bytes -> raw bytes without suffix
 def stringbytes_to_integer(stringbytes: str, resource: str):
     mult: int = 1
     stringbytes = str.lower(stringbytes)
@@ -55,6 +63,7 @@ def stringbytes_to_integer(stringbytes: str, resource: str):
         print(f"ERROR: Cannot cast {resource} limit into integer!")
         return None
 
+#Translates raw bytes without suffix -> bytes with KB/MB/GB suffix
 def integer_to_stringbytes(number: float):
     if number >= (1_024 * 1_024 * 1_024):
         return f"{number / (1_024 * 1_024 * 1_024):.2f}GB"
